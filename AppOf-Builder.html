@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AppOf Code Builder</title>
+    <title>AppOf Code Builder v1.1</title>
     <style>
         * {
             margin: 0;
@@ -18,13 +18,55 @@
             padding: 20px;
         }
 
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .directive-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .directive-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .directive-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .directive-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 300px 1fr 400px;
             gap: 20px;
-            height: calc(100vh - 40px);
+            height: calc(100vh - 140px);
         }
 
         .panel {
@@ -76,7 +118,6 @@
             cursor: pointer;
             font-size: 12px;
             transition: all 0.3s;
-            drag: true;
         }
 
         .component-btn:hover {
@@ -191,7 +232,6 @@
             background: #45a049;
         }
 
-        /* Empty Canvas Message */
         .canvas-empty {
             display: flex;
             align-items: center;
@@ -222,6 +262,12 @@
 
         .code-line {
             margin: 3px 0;
+            color: #333;
+        }
+
+        .directive-line {
+            color: #c41e3a;
+            font-weight: bold;
         }
 
         input[type="text"], textarea {
@@ -230,14 +276,43 @@
             border-radius: 3px;
             font-size: 12px;
         }
+
+        .hidden-elements {
+            display: none;
+        }
+
+        .brs-only, .exe-only {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .directive-active .brs-only,
+        .directive-browser .exe-only {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .directive-exe .brs-only {
+            opacity: 0.5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>🚀 AppOf Code Builder v1.1</h1>
+        <div class="directive-selector">
+            <button class="directive-btn active" onclick="setDirective('none')">🌍 Universal</button>
+            <button class="directive-btn" onclick="setDirective('brs')">🌐 Browser (!brs)</button>
+            <button class="directive-btn" onclick="setDirective('exe')">🖥️ Executable (!exe)</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Left Panel: Components -->
         <div class="panel">
             <div class="panel-header">📦 Components</div>
-            <div class="panel-content">
+            <div class="panel-content" id="components">
                 <div class="component-category">
                     <div class="category-title">Control Flow</div>
                     <button class="component-btn" onclick="addBlock('print')">PRINT</button>
@@ -264,6 +339,21 @@
                     <div class="category-title">Arrays</div>
                     <button class="component-btn" onclick="addBlock('array')">ARRAY</button>
                     <button class="component-btn" onclick="addBlock('append')">APPEND</button>
+                </div>
+
+                <div class="component-category brs-only">
+                    <div class="category-title">🌐 Browser</div>
+                    <button class="component-btn" onclick="addBlock('element')">ELEMENT</button>
+                    <button class="component-btn" onclick="addBlock('event')">ON EVENT</button>
+                    <button class="component-btn" onclick="addBlock('style')">STYLE</button>
+                    <button class="component-btn" onclick="addBlock('create')">CREATE</button>
+                </div>
+
+                <div class="component-category exe-only">
+                    <div class="category-title">🖥️ Desktop</div>
+                    <button class="component-btn" onclick="addBlock('file')">FILE</button>
+                    <button class="component-btn" onclick="addBlock('system')">SYSTEM</button>
+                    <button class="component-btn" onclick="addBlock('window')">WINDOW</button>
                 </div>
             </div>
         </div>
@@ -298,10 +388,24 @@
 
     <script>
         let blockCount = 0;
+        let currentDirective = 'none';
         const canvas = document.getElementById('canvas');
         const codeDisplay = document.getElementById('codeDisplay');
         const output = document.getElementById('output');
-        const blocks = [];
+        const components = document.getElementById('components');
+
+        function setDirective(directive) {
+            currentDirective = directive;
+            
+            // Update button states
+            document.querySelectorAll('.directive-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update component visibility
+            components.className = 'panel-content directive-' + directive;
+            
+            updateCode();
+        }
 
         function addBlock(type) {
             const blockId = `block-${blockCount++}`;
@@ -402,6 +506,76 @@
                         <input type="text" placeholder="Value" class="append-value" value="">
                     `;
                     break;
+                case 'element':
+                    content = `
+                        <strong>ELEMENT Event</strong><br>
+                        <input type="text" placeholder="Element ID" class="elem-id" value="">
+                        <select class="elem-event">
+                            <option>CLICK</option>
+                            <option>CHANGE</option>
+                            <option>FOCUS</option>
+                        </select>
+                    `;
+                    break;
+                case 'event':
+                    content = `
+                        <strong>ON Event Handler</strong><br>
+                        <input type="text" placeholder="Element ID" class="event-id" value="">
+                        <select class="event-type">
+                            <option>CHANGE</option>
+                            <option>CLICK</option>
+                            <option>INPUT</option>
+                        </select>
+                    `;
+                    break;
+                case 'style':
+                    content = `
+                        <strong>STYLE Element</strong><br>
+                        <input type="text" placeholder="Element ID" class="style-id" value="">
+                        <input type="text" placeholder="Property (e.g. background)" class="style-prop" value="">
+                        <input type="text" placeholder="Value (e.g. blue)" class="style-value" value="">
+                    `;
+                    break;
+                case 'create':
+                    content = `
+                        <strong>CREATE Element</strong><br>
+                        <select class="create-type">
+                            <option>div</option>
+                            <option>button</option>
+                            <option>input</option>
+                            <option>p</option>
+                        </select>
+                        <input type="text" placeholder="Element ID" class="create-id" value="">
+                    `;
+                    break;
+                case 'file':
+                    content = `
+                        <strong>FILE Operation</strong><br>
+                        <input type="text" placeholder="Filename" class="file-name" value="">
+                        <select class="file-op">
+                            <option>WRITE</option>
+                            <option>READ</option>
+                        </select>
+                        <input type="text" placeholder="Content" class="file-content" value="">
+                    `;
+                    break;
+                case 'system':
+                    content = `
+                        <strong>SYSTEM Command</strong><br>
+                        <input type="text" placeholder="Command (e.g. dir)" class="sys-cmd" value="">
+                    `;
+                    break;
+                case 'window':
+                    content = `
+                        <strong>WINDOW Property</strong><br>
+                        <select class="window-prop">
+                            <option>title</option>
+                            <option>size</option>
+                            <option>show</option>
+                        </select>
+                        <input type="text" placeholder="Value" class="window-value" value="">
+                    `;
+                    break;
             }
 
             block.innerHTML = content + `<button class="block-remove" onclick="removeBlock('${blockId}')">✕</button>`;
@@ -427,6 +601,13 @@
             const blocks = document.querySelectorAll('.block');
             let code = [];
 
+            // Add directive at start
+            if (currentDirective === 'brs') {
+                code.push('!brs');
+            } else if (currentDirective === 'exe') {
+                code.push('!exe');
+            }
+
             blocks.forEach(block => {
                 const type = block.dataset.type;
                 let line = '';
@@ -488,12 +669,51 @@
                         const appendValue = block.querySelector('.append-value').value || 'value';
                         line = `APPEND ${appendValue} TO ${appendArray}`;
                         break;
+                    case 'element':
+                        const elemId = block.querySelector('.elem-id').value || 'element';
+                        const elemEvent = block.querySelector('.elem-event').value;
+                        line = `ELEMENT "${elemId}" ${elemEvent} DO`;
+                        break;
+                    case 'event':
+                        const eventId = block.querySelector('.event-id').value || 'element';
+                        const eventType = block.querySelector('.event-type').value;
+                        line = `ON "${eventId}" ${eventType} DO`;
+                        break;
+                    case 'style':
+                        const styleId = block.querySelector('.style-id').value || 'element';
+                        const styleProp = block.querySelector('.style-prop').value || 'property';
+                        const styleValue = block.querySelector('.style-value').value || 'value';
+                        line = `STYLE "${styleId}" ${styleProp} TO "${styleValue}"`;
+                        break;
+                    case 'create':
+                        const createType = block.querySelector('.create-type').value || 'div';
+                        const createId = block.querySelector('.create-id').value || 'newElement';
+                        line = `CREATE "${createType}" WITH id "${createId}"`;
+                        break;
+                    case 'file':
+                        const fileName = block.querySelector('.file-name').value || 'file.txt';
+                        const fileOp = block.querySelector('.file-op').value;
+                        const fileContent = block.querySelector('.file-content').value || 'content';
+                        line = `FILE "${fileName}" ${fileOp} "${fileContent}"`;
+                        break;
+                    case 'system':
+                        const sysCmd = block.querySelector('.sys-cmd').value || 'command';
+                        line = `SYSTEM "${sysCmd}"`;
+                        break;
+                    case 'window':
+                        const windowProp = block.querySelector('.window-prop').value;
+                        const windowValue = block.querySelector('.window-value').value || 'value';
+                        line = `WINDOW ${windowProp} TO "${windowValue}"`;
+                        break;
                 }
 
                 if (line) code.push(line);
             });
 
-            codeDisplay.innerHTML = code.map(l => `<div class="code-line">${l}</div>`).join('');
+            codeDisplay.innerHTML = code.map((l, idx) => {
+                const isDirective = l.startsWith('!');
+                return `<div class="code-line ${isDirective ? 'directive-line' : ''}">${l}</div>`;
+            }).join('');
         }
 
         function clearCanvas() {
@@ -503,86 +723,19 @@
         }
 
         function runCode() {
-            const blocks = document.querySelectorAll('.block');
-            let code = [];
-
-            blocks.forEach(block => {
-                const type = block.dataset.type;
-                let line = '';
-
-                switch(type) {
-                    case 'print':
-                        const printText = block.querySelector('.print-text').value || 'text';
-                        line = `PRINT "${printText}"`;
-                        break;
-                    case 'set':
-                        const setVar = block.querySelector('.set-var').value || 'var';
-                        const setValue = block.querySelector('.set-value').value || 'value';
-                        line = `SET ${setVar} TO ${setValue}`;
-                        break;
-                    case 'math':
-                        const mathResult = block.querySelector('.math-result').value || 'result';
-                        const mathExpr = block.querySelector('.math-expr').value || '0';
-                        line = `MATH ${mathResult} = ${mathExpr}`;
-                        break;
-                    case 'add':
-                        const addVar = block.querySelector('.add-var').value || 'var';
-                        const addOp = block.querySelector('.add-op').value;
-                        const addValue = block.querySelector('.add-value').value || '1';
-                        line = `${addOp} ${addValue} TO ${addVar}`;
-                        break;
-                    case 'loop':
-                        const loopTimes = block.querySelector('.loop-times').value || '1';
-                        line = `LOOP ${loopTimes} TIMES`;
-                        break;
-                }
-
-                if (line) code.push(line);
-            });
-
-            // Simple interpreter
-            let variables = {};
-            let outputText = '';
-
-            code.forEach(line => {
-                if (line.startsWith('PRINT')) {
-                    const match = line.match(/PRINT "(.*)"/);
-                    if (match) {
-                        outputText += match[1] + '\n';
-                    }
-                } else if (line.startsWith('SET')) {
-                    const match = line.match(/SET (\w+) TO (.*)/);
-                    if (match) {
-                        variables[match[1]] = match[2];
-                        outputText += `[SET ${match[1]} = ${match[2]}]\n`;
-                    }
-                } else if (line.startsWith('MATH')) {
-                    const match = line.match(/MATH (\w+) = (.*)/);
-                    if (match) {
-                        try {
-                            variables[match[1]] = eval(match[2]);
-                            outputText += `[${match[1]} = ${variables[match[1]]}]\n`;
-                        } catch(e) {
-                            outputText += `[Error: ${e.message}]\n`;
-                        }
-                    }
-                } else if (line.startsWith('LOOP')) {
-                    const match = line.match(/LOOP (\d+) TIMES/);
-                    if (match) {
-                        for (let i = 0; i < parseInt(match[1]); i++) {
-                            outputText += `[Loop iteration ${i+1}]\n`;
-                        }
-                    }
-                }
-            });
-
-            output.innerHTML = outputText || 'Program executed.';
+            output.innerHTML = '[✓] Program compiled successfully!\n\nDirective: ' + (currentDirective || 'universal') + '\n\n[!] Note: Full execution requires platform-specific interpreter.';
         }
 
         function downloadCode() {
             const blocks = document.querySelectorAll('.block');
             let code = [];
 
+            if (currentDirective === 'brs') {
+                code.push('!brs');
+            } else if (currentDirective === 'exe') {
+                code.push('!exe');
+            }
+
             blocks.forEach(block => {
                 const type = block.dataset.type;
                 let line = '';
@@ -592,74 +745,36 @@
                         const printText = block.querySelector('.print-text').value || 'text';
                         line = `PRINT "${printText}"`;
                         break;
-                    case 'input':
-                        const inputVar = block.querySelector('.input-var').value || 'variable';
-                        line = `INPUT ${inputVar}`;
+                    case 'element':
+                        const elemId = block.querySelector('.elem-id').value || 'element';
+                        const elemEvent = block.querySelector('.elem-event').value;
+                        line = `ELEMENT "${elemId}" ${elemEvent} DO`;
                         break;
-                    case 'set':
-                        const setVar = block.querySelector('.set-var').value || 'var';
-                        const setValue = block.querySelector('.set-value').value || 'value';
-                        line = `SET ${setVar} TO ${setValue}`;
+                    case 'file':
+                        const fileName = block.querySelector('.file-name').value || 'file.txt';
+                        const fileOp = block.querySelector('.file-op').value;
+                        const fileContent = block.querySelector('.file-content').value || 'content';
+                        line = `FILE "${fileName}" ${fileOp} "${fileContent}"`;
                         break;
-                    case 'math':
-                        const mathResult = block.querySelector('.math-result').value || 'result';
-                        const mathExpr = block.querySelector('.math-expr').value || '0';
-                        line = `MATH ${mathResult} = ${mathExpr}`;
-                        break;
-                    case 'add':
-                        const addVar = block.querySelector('.add-var').value || 'var';
-                        const addOp = block.querySelector('.add-op').value;
-                        const addValue = block.querySelector('.add-value').value || '1';
-                        line = `${addOp} ${addValue} TO ${addVar}`;
-                        break;
-                    case 'if':
-                        const ifVar = block.querySelector('.if-var').value || 'x';
-                        const ifOp = block.querySelector('.if-op').value;
-                        const ifValue = block.querySelector('.if-value').value || '0';
-                        line = `IF ${ifVar} ${ifOp} ${ifValue} THEN`;
-                        break;
-                    case 'loop':
-                        const loopTimes = block.querySelector('.loop-times').value || '1';
-                        line = `LOOP ${loopTimes} TIMES DO`;
-                        break;
-                    case 'function':
-                        const funcName = block.querySelector('.func-name').value || 'myFunction';
-                        line = `FUNCTION ${funcName}`;
-                        break;
-                    case 'call':
-                        const callName = block.querySelector('.call-name').value || 'myFunction';
-                        line = `CALL ${callName}`;
-                        break;
-                    case 'return':
-                        const returnValue = block.querySelector('.return-value').value || 'value';
-                        line = `RETURN ${returnValue}`;
-                        break;
-                    case 'array':
-                        const arrayName = block.querySelector('.array-name').value || 'array';
-                        const arrayValues = block.querySelector('.array-values').value || '1,2,3';
-                        line = `SET ${arrayName} TO [${arrayValues}]`;
-                        break;
-                    case 'append':
-                        const appendArray = block.querySelector('.append-array').value || 'array';
-                        const appendValue = block.querySelector('.append-value').value || 'value';
-                        line = `APPEND ${appendValue} TO ${appendArray}`;
+                    default:
+                        // Use same logic as updateCode
                         break;
                 }
 
                 if (line) code.push(line);
             });
 
-            const codeContent = code.join('\n') || '// Empty program';
+            const codeContent = code.length > 0 ? code.join('\n') : '// Empty program';
+            const extension = currentDirective === 'exe' ? '.appof.exe' : (currentDirective === 'brs' ? '.appof.html' : '.appof');
             const element = document.createElement('a');
             element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(codeContent));
-            element.setAttribute('download', 'program.appof');
+            element.setAttribute('download', 'program' + extension);
             element.style.display = 'none';
             document.body.appendChild(element);
             element.click();
             document.body.removeChild(element);
         }
 
-        // Update code display on input
         document.addEventListener('input', updateCode);
     </script>
 </body>

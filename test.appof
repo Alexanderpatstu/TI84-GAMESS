@@ -1,0 +1,6 @@
+!brs
+CREATE "button" WITH id "myBtn"
+STYLE "myBtn" background TO "blue"
+ON "myBtn" CLICK DO
+    PRINT "Button clicked!"
+END

@@ -39,7 +39,7 @@
 :
 :If CHOICE = 3
 :Then
-:{"INFO FILE","VERSION 1.0","TEXT VIEWER","FOR TI84 CE","STORAGE LIMITED","MAX 8 LINES","USE ARROW KEYS","DEL=PANIC EXIT"} → L1
+:{"INFO FILE","VERSION 1.0","TEXT VIEWER","FOR TI84 CE","STORAGE LIMITED","MAX 8 LINES","USE ARROW KEYS","DEL=CLOSE APP"} → L1
 :End
 :
 :0 → PAGE
@@ -58,7 +58,7 @@
 :Disp ""
 :Disp "PG:",PAGE+1,"/ 2"
 :Disp "UP=Back DOWN=Next"
-:Disp "DEL=PANIC 2ND=Exit"
+:Disp "DEL=CLOSE 2ND=Menu"
 :
 :getKey → KEY
 :
@@ -78,25 +78,17 @@
 :
 :If KEY = 92
 :Then
-:ClrHome
-:Disp "PANIC MODE"
-:Disp "ACTIVATED"
-:Disp ""
-:Disp "CLEARING DATA..."
-:delvar L1
-:Pause 1
-:ClrHome
 :0 → VIEWING
 :End
 :
 :If KEY = 47
 :Then
 :0 → VIEWING
+:Goto 0
 :End
 :
 :Pause 0.1
 :
 :End
 :
-:Goto 0
 :End

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppOf Code Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            gap: 20px;
+            height: calc(100vh - 40px);
+        }
+
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        /* Components Panel */
+        .component-category {
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            background: #f0f0f0;
+            padding: 8px 10px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #667eea;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .component-btn {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            drag: true;
+        }
+
+        .component-btn:hover {
+            background: #764ba2;
+            transform: translateX(5px);
+        }
+
+        /* Canvas */
+        .canvas {
+            background: #f9f9f9;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            position: relative;
+            overflow-y: auto;
+            min-height: 500px;
+        }
+
+        .block {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: move;
+            position: relative;
+            user-select: none;
+            font-size: 13px;
+        }
+
+        .block input, .block select {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .block-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .block-remove:hover {
+            background: #cc0000;
+        }
+
+        /* Output Panel */
+        .output-box {
+            background: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        /* Empty Canvas Message */
+        .canvas-empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 14px;
+        }
+
+        h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .code-display {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .code-line {
+            margin: 3px 0;
+        }
+
+        input[type="text"], textarea {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: Components -->
+        <div class="panel">
+            <div class="panel-header">📦 Components</div>
+            <div class="panel-content">
+                <div class="component-category">
+                    <div class="category-title">Control Flow</div>
+                    <button class="component-btn" onclick="addBlock('print')">PRINT</button>
+                    <button class="component-btn" onclick="addBlock('input')">INPUT</button>
+                    <button class="component-btn" onclick="addBlock('if')">IF</button>
+                    <button class="component-btn" onclick="addBlock('loop')">LOOP</button>
+                </div>
+
+                <div class="component-category">
+                    <div class="category-title">Variables</div>
+                    <button class="component-btn" onclick="addBlock('set')">SET</button>
+                    <button class="component-btn" onclick="addBlock('math')">MATH</button>
+                    <button class="component-btn" onclick="addBlock('add')">ADD/SUBTRACT</button>
+                </div>
+
+                <div class="component-category">
+                    <div class="category-title">Functions</div>
+                    <button class="component-btn" onclick="addBlock('function')">FUNCTION</button>
+                    <button class="component-btn" onclick="addBlock('call')">CALL</button>
+                    <button class="component-btn" onclick="addBlock('return')">RETURN</button>
+                </div>
+
+                <div class="component-category">
+                    <div class="category-title">Arrays</div>
+                    <button class="component-btn" onclick="addBlock('array')">ARRAY</button>
+                    <button class="component-btn" onclick="addBlock('append')">APPEND</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Panel: Canvas -->
+        <div class="panel">
+            <div class="panel-header">✨ Canvas</div>
+            <div id="canvas" class="canvas">
+                <div class="canvas-empty">Drag components here to build your program</div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="clearCanvas()">Clear</button>
+                <button class="btn btn-success" onclick="runCode()">▶ Run</button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Code & Output -->
+        <div class="panel">
+            <div class="panel-header">💻 Code & Output</div>
+            <div class="panel-content">
+                <h3>Generated Code:</h3>
+                <div id="codeDisplay" class="code-display">// Your code will appear here</div>
+                
+                <h3 style="margin-top: 20px;">Output:</h3>
+                <div id="output" class="output-box"></div>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" onclick="downloadCode()">⬇ Export</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let blockCount = 0;
+        const canvas = document.getElementById('canvas');
+        const codeDisplay = document.getElementById('codeDisplay');
+        const output = document.getElementById('output');
+        const blocks = [];
+
+        function addBlock(type) {
+            const blockId = `block-${blockCount++}`;
+            const block = document.createElement('div');
+            block.className = 'block';
+            block.id = blockId;
+            block.draggable = true;
+
+            let content = '';
+            
+            switch(type) {
+                case 'print':
+                    content = `
+                        <strong>PRINT</strong><br>
+                        <input type="text" placeholder="Enter text or variable" class="print-text" value="">
+                    `;
+                    break;
+                case 'input':
+                    content = `
+                        <strong>INPUT</strong><br>
+                        <input type="text" placeholder="Variable name" class="input-var" value="">
+                    `;
+                    break;
+                case 'set':
+                    content = `
+                        <strong>SET Variable</strong><br>
+                        <input type="text" placeholder="Variable name" class="set-var" value="">
+                        <input type="text" placeholder="Value" class="set-value" value="">
+                    `;
+                    break;
+                case 'math':
+                    content = `
+                        <strong>MATH Operation</strong><br>
+                        <input type="text" placeholder="Result var" class="math-result" value="">
+                        <input type="text" placeholder="Expression (e.g. x+5)" class="math-expr" value="">
+                    `;
+                    break;
+                case 'add':
+                    content = `
+                        <strong>ADD/SUBTRACT</strong><br>
+                        <input type="text" placeholder="Variable" class="add-var" value="">
+                        <select class="add-op">
+                            <option>ADD</option>
+                            <option>SUBTRACT</option>
+                            <option>MULTIPLY</option>
+                            <option>DIVIDE</option>
+                        </select>
+                        <input type="text" placeholder="Value" class="add-value" value="">
+                    `;
+                    break;
+                case 'if':
+                    content = `
+                        <strong>IF Condition</strong><br>
+                        <input type="text" placeholder="Variable" class="if-var" value="">
+                        <select class="if-op">
+                            <option>EQUALS</option>
+                            <option>GREATER_THAN</option>
+                            <option>LESS_THAN</option>
+                        </select>
+                        <input type="text" placeholder="Value" class="if-value" value="">
+                    `;
+                    break;
+                case 'loop':
+                    content = `
+                        <strong>LOOP</strong><br>
+                        <input type="number" placeholder="Times" class="loop-times" value="5">
+                    `;
+                    break;
+                case 'function':
+                    content = `
+                        <strong>FUNCTION</strong><br>
+                        <input type="text" placeholder="Function name" class="func-name" value="">
+                    `;
+                    break;
+                case 'call':
+                    content = `
+                        <strong>CALL Function</strong><br>
+                        <input type="text" placeholder="Function name" class="call-name" value="">
+                    `;
+                    break;
+                case 'return':
+                    content = `
+                        <strong>RETURN</strong><br>
+                        <input type="text" placeholder="Value to return" class="return-value" value="">
+                    `;
+                    break;
+                case 'array':
+                    content = `
+                        <strong>ARRAY</strong><br>
+                        <input type="text" placeholder="Array name" class="array-name" value="">
+                        <input type="text" placeholder="Values [1,2,3]" class="array-values" value="">
+                    `;
+                    break;
+                case 'append':
+                    content = `
+                        <strong>APPEND</strong><br>
+                        <input type="text" placeholder="Array name" class="append-array" value="">
+                        <input type="text" placeholder="Value" class="append-value" value="">
+                    `;
+                    break;
+            }
+
+            block.innerHTML = content + `<button class="block-remove" onclick="removeBlock('${blockId}')">✕</button>`;
+            block.dataset.type = type;
+
+            canvas.appendChild(block);
+            if (canvas.querySelector('.canvas-empty')) {
+                canvas.querySelector('.canvas-empty').remove();
+            }
+
+            updateCode();
+        }
+
+        function removeBlock(blockId) {
+            document.getElementById(blockId).remove();
+            if (document.querySelectorAll('.block').length === 0) {
+                canvas.innerHTML = '<div class="canvas-empty">Drag components here to build your program</div>';
+            }
+            updateCode();
+        }
+
+        function updateCode() {
+            const blocks = document.querySelectorAll('.block');
+            let code = [];
+
+            blocks.forEach(block => {
+                const type = block.dataset.type;
+                let line = '';
+
+                switch(type) {
+                    case 'print':
+                        const printText = block.querySelector('.print-text').value || 'text';
+                        line = `PRINT "${printText}"`;
+                        break;
+                    case 'input':
+                        const inputVar = block.querySelector('.input-var').value || 'variable';
+                        line = `INPUT ${inputVar}`;
+                        break;
+                    case 'set':
+                        const setVar = block.querySelector('.set-var').value || 'var';
+                        const setValue = block.querySelector('.set-value').value || 'value';
+                        line = `SET ${setVar} TO ${setValue}`;
+                        break;
+                    case 'math':
+                        const mathResult = block.querySelector('.math-result').value || 'result';
+                        const mathExpr = block.querySelector('.math-expr').value || '0';
+                        line = `MATH ${mathResult} = ${mathExpr}`;
+                        break;
+                    case 'add':
+                        const addVar = block.querySelector('.add-var').value || 'var';
+                        const addOp = block.querySelector('.add-op').value;
+                        const addValue = block.querySelector('.add-value').value || '1';
+                        line = `${addOp} ${addValue} TO ${addVar}`;
+                        break;
+                    case 'if':
+                        const ifVar = block.querySelector('.if-var').value || 'x';
+                        const ifOp = block.querySelector('.if-op').value;
+                        const ifValue = block.querySelector('.if-value').value || '0';
+                        line = `IF ${ifVar} ${ifOp} ${ifValue} THEN`;
+                        break;
+                    case 'loop':
+                        const loopTimes = block.querySelector('.loop-times').value || '1';
+                        line = `LOOP ${loopTimes} TIMES DO`;
+                        break;
+                    case 'function':
+                        const funcName = block.querySelector('.func-name').value || 'myFunction';
+                        line = `FUNCTION ${funcName}`;
+                        break;
+                    case 'call':
+                        const callName = block.querySelector('.call-name').value || 'myFunction';
+                        line = `CALL ${callName}`;
+                        break;
+                    case 'return':
+                        const returnValue = block.querySelector('.return-value').value || 'value';
+                        line = `RETURN ${returnValue}`;
+                        break;
+                    case 'array':
+                        const arrayName = block.querySelector('.array-name').value || 'array';
+                        const arrayValues = block.querySelector('.array-values').value || '1,2,3';
+                        line = `SET ${arrayName} TO [${arrayValues}]`;
+                        break;
+                    case 'append':
+                        const appendArray = block.querySelector('.append-array').value || 'array';
+                        const appendValue = block.querySelector('.append-value').value || 'value';
+                        line = `APPEND ${appendValue} TO ${appendArray}`;
+                        break;
+                }
+
+                if (line) code.push(line);
+            });
+
+            codeDisplay.innerHTML = code.map(l => `<div class="code-line">${l}</div>`).join('');
+        }
+
+        function clearCanvas() {
+            canvas.innerHTML = '<div class="canvas-empty">Drag components here to build your program</div>';
+            codeDisplay.innerHTML = '// Your code will appear here';
+            output.innerHTML = '';
+        }
+
+        function runCode() {
+            const blocks = document.querySelectorAll('.block');
+            let code = [];
+
+            blocks.forEach(block => {
+                const type = block.dataset.type;
+                let line = '';
+
+                switch(type) {
+                    case 'print':
+                        const printText = block.querySelector('.print-text').value || 'text';
+                        line = `PRINT "${printText}"`;
+                        break;
+                    case 'set':
+                        const setVar = block.querySelector('.set-var').value || 'var';
+                        const setValue = block.querySelector('.set-value').value || 'value';
+                        line = `SET ${setVar} TO ${setValue}`;
+                        break;
+                    case 'math':
+                        const mathResult = block.querySelector('.math-result').value || 'result';
+                        const mathExpr = block.querySelector('.math-expr').value || '0';
+                        line = `MATH ${mathResult} = ${mathExpr}`;
+                        break;
+                    case 'add':
+                        const addVar = block.querySelector('.add-var').value || 'var';
+                        const addOp = block.querySelector('.add-op').value;
+                        const addValue = block.querySelector('.add-value').value || '1';
+                        line = `${addOp} ${addValue} TO ${addVar}`;
+                        break;
+                    case 'loop':
+                        const loopTimes = block.querySelector('.loop-times').value || '1';
+                        line = `LOOP ${loopTimes} TIMES`;
+                        break;
+                }
+
+                if (line) code.push(line);
+            });
+
+            // Simple interpreter
+            let variables = {};
+            let outputText = '';
+
+            code.forEach(line => {
+                if (line.startsWith('PRINT')) {
+                    const match = line.match(/PRINT "(.*)"/);
+                    if (match) {
+                        outputText += match[1] + '\n';
+                    }
+                } else if (line.startsWith('SET')) {
+                    const match = line.match(/SET (\w+) TO (.*)/);
+                    if (match) {
+                        variables[match[1]] = match[2];
+                        outputText += `[SET ${match[1]} = ${match[2]}]\n`;
+                    }
+                } else if (line.startsWith('MATH')) {
+                    const match = line.match(/MATH (\w+) = (.*)/);
+                    if (match) {
+                        try {
+                            variables[match[1]] = eval(match[2]);
+                            outputText += `[${match[1]} = ${variables[match[1]]}]\n`;
+                        } catch(e) {
+                            outputText += `[Error: ${e.message}]\n`;
+                        }
+                    }
+                } else if (line.startsWith('LOOP')) {
+                    const match = line.match(/LOOP (\d+) TIMES/);
+                    if (match) {
+                        for (let i = 0; i < parseInt(match[1]); i++) {
+                            outputText += `[Loop iteration ${i+1}]\n`;
+                        }
+                    }
+                }
+            });
+
+            output.innerHTML = outputText || 'Program executed.';
+        }
+
+        function downloadCode() {
+            const blocks = document.querySelectorAll('.block');
+            let code = [];
+
+            blocks.forEach(block => {
+                const type = block.dataset.type;
+                let line = '';
+
+                switch(type) {
+                    case 'print':
+                        const printText = block.querySelector('.print-text').value || 'text';
+                        line = `PRINT "${printText}"`;
+                        break;
+                    case 'input':
+                        const inputVar = block.querySelector('.input-var').value || 'variable';
+                        line = `INPUT ${inputVar}`;
+                        break;
+                    case 'set':
+                        const setVar = block.querySelector('.set-var').value || 'var';
+                        const setValue = block.querySelector('.set-value').value || 'value';
+                        line = `SET ${setVar} TO ${setValue}`;
+                        break;
+                    case 'math':
+                        const mathResult = block.querySelector('.math-result').value || 'result';
+                        const mathExpr = block.querySelector('.math-expr').value || '0';
+                        line = `MATH ${mathResult} = ${mathExpr}`;
+                        break;
+                    case 'add':
+                        const addVar = block.querySelector('.add-var').value || 'var';
+                        const addOp = block.querySelector('.add-op').value;
+                        const addValue = block.querySelector('.add-value').value || '1';
+                        line = `${addOp} ${addValue} TO ${addVar}`;
+                        break;
+                    case 'if':
+                        const ifVar = block.querySelector('.if-var').value || 'x';
+                        const ifOp = block.querySelector('.if-op').value;
+                        const ifValue = block.querySelector('.if-value').value || '0';
+                        line = `IF ${ifVar} ${ifOp} ${ifValue} THEN`;
+                        break;
+                    case 'loop':
+                        const loopTimes = block.querySelector('.loop-times').value || '1';
+                        line = `LOOP ${loopTimes} TIMES DO`;
+                        break;
+                    case 'function':
+                        const funcName = block.querySelector('.func-name').value || 'myFunction';
+                        line = `FUNCTION ${funcName}`;
+                        break;
+                    case 'call':
+                        const callName = block.querySelector('.call-name').value || 'myFunction';
+                        line = `CALL ${callName}`;
+                        break;
+                    case 'return':
+                        const returnValue = block.querySelector('.return-value').value || 'value';
+                        line = `RETURN ${returnValue}`;
+                        break;
+                    case 'array':
+                        const arrayName = block.querySelector('.array-name').value || 'array';
+                        const arrayValues = block.querySelector('.array-values').value || '1,2,3';
+                        line = `SET ${arrayName} TO [${arrayValues}]`;
+                        break;
+                    case 'append':
+                        const appendArray = block.querySelector('.append-array').value || 'array';
+                        const appendValue = block.querySelector('.append-value').value || 'value';
+                        line = `APPEND ${appendValue} TO ${appendArray}`;
+                        break;
+                }
+
+                if (line) code.push(line);
+            });
+
+            const codeContent = code.join('\n') || '// Empty program';
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(codeContent));
+            element.setAttribute('download', 'program.appof');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        // Update code display on input
+        document.addEventListener('input', updateCode);
+    </script>
+</body>
+</html>
